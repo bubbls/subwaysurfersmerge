@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base href="https://cdn.jsdelivr.net/gh/genizy/subwaysurfers@main/unity/">
+    <script src="split.js"></script>
+    <script>
+        const originalFetch = window.fetch;
+        window.fetch = async (input, init) => {
+            if (typeof input === "string" && (input.includes(".wasm.code.unityweb") || input.includes(".data.unityweb"))) {
+                const parts = getParts(input, 1, 2);
+                const mergedFileUrl = await mergeFiles(parts, (index) => {
+                    console.log("Fetched part", index + 1);
+                });
+                const blob = await fetch(mergedFileUrl).then(res => res.blob());
+                return new Response(blob, {
+                    status: 200,
+                    headers: {
+                        "Content-Type": blob.type || "application/octet-stream",
+                    }
+                });
+            }
+            return originalFetch(input, init);
+        };
+    </script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Subway Surfers: Beijing</title>
+    <link rel="icon" type="image/x-icon" href="shared/favicon.ico" />
+    <script src="shared/subwaySurf14.08.js"></script>
+    <script>
+        window.config = {
+            loader: "unity",
+            debug: false,
+            maxRatio: 16 / 9,
+            minRatio: 9 / 16,
+            title: "Subway Surfers: Beijing",
+            unityVersion: "2019.1.0f1",
+            unityWebglBuildUrl: "winter-holiday\/Beijing_2.json",
+            fileSize: 24,
+            cachedDecompressedFileSizes: {
+                'Beijing_2.asm.code.unityweb': 9059136,
+                'Beijing_2.asm.framework.unityweb': 89457,
+                'Beijing_2.asm.memory.unityweb': 1007260,
+                'Beijing_2.data.unityweb': 19343219,
+                'Beijing_2.wasm.code.unityweb': 7338464,
+                'Beijing_2.wasm.framework.unityweb': 93787,
+            },
+        };
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SX3SJWCLEY"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag("js", new Date());
+        gtag("config", "G-SX3SJWCLEY");
+    </script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3324915803425189" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <script src="shared/master-loader.js"></script>
+    <script src="shared/register-sw.js"></script>
+    <script>
+        (function () {
+            function c() {
+                var b = a.contentDocument || a.contentWindow.document;
+                if (b) {
+                    var d = b.createElement('script');
+                    d.innerHTML = "window.__CF$cv$params={r:'92c62ac0a9e70fd7',t:'MTc0Mzk5MzY5Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+                    b.getElementsByTagName('head')[0].appendChild(d)
+                }
+            }
+            if (document.body) {
+                var a = document.createElement('iframe');
+                a.height = 1;
+                a.width = 1;
+                a.style.position = 'absolute';
+                a.style.top = 0;
+                a.style.left = 0;
+                a.style.border = 'none';
+                a.style.visibility = 'hidden';
+                document.body.appendChild(a);
+                if ('loading' !== document.readyState) c();
+                else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c);
+                else {
+                    var e = document.onreadystatechange || function () {};
+                    document.onreadystatechange = function (b) {
+                        e(b);
+                        'loading' !== document.readyState && (document.onreadystatechange = e, c())
+                    }
+                }
+            }
+        })();
+    </script>
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"92c62ac0a9e70fd7","version":"2025.3.0","r":1,"token":"1646abcce58241b1aef359d9d36b339d","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}' crossorigin="anonymous"></script>
+</body>
+
+</html>
