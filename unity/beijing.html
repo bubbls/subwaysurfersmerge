@@ -2,27 +2,7 @@
 <html lang="en">
 
 <head>
-    <base href="https://cdn.jsdelivr.net/gh/genizy/subwaysurfers@52dbe42807decd540b324ddd963f4012373cf30d/unity/">
-    <script src="split.js"></script>
-    <script>
-        const originalFetch = window.fetch;
-        window.fetch = async (input, init) => {
-            if (typeof input === "string" && (input.includes(".wasm.code.unityweb") || input.includes(".data.unityweb"))) {
-                const parts = getParts(input, 1, 2);
-                const mergedFileUrl = await mergeFiles(parts, (index) => {
-                    console.log("Fetched part", index + 1);
-                });
-                const blob = await fetch(mergedFileUrl).then(res => res.blob());
-                return new Response(blob, {
-                    status: 200,
-                    headers: {
-                        "Content-Type": blob.type || "application/octet-stream",
-                    }
-                });
-            }
-            return originalFetch(input, init);
-        };
-    </script>
+    <base href="https://raw.githack.com/genizy/subwaysurfers/9f7a56e584b4c466b1f260e6f5cf2c3edb19b711/unity/">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Subway Surfers: Beijing</title>
@@ -36,7 +16,7 @@
             minRatio: 9 / 16,
             title: "Subway Surfers: Beijing",
             unityVersion: "2019.1.0f1",
-            unityWebglBuildUrl: "winter-holiday\/Beijing_2.json",
+            unityWebglBuildUrl: "beijing\/Beijing_2.json",
             fileSize: 24,
             cachedDecompressedFileSizes: {
                 'Beijing_2.asm.code.unityweb': 9059136,
