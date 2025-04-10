@@ -19605,7 +19605,7 @@
     }, , function(t, e, r) {
 
         t.exports = function() {
-        fetch(i.p + "js/workers/worker.21cc18ec46e616e4eed8.js").then(res => res.text()).then(text => {
+        fetch(r.p + "js/workers/worker.21cc18ec46e616e4eed8.js").then(res => res.text()).then(text => {
             const blob = new Blob([text], { type: 'application/javascript' });
             const blobURL = URL.createObjectURL(blob);
             return new Worker(blobURL);
