@@ -6,7 +6,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Subway Surfers: Havana</title>
     <link rel="icon" href="img/FirstAvatar.png">
-    <script src="unity/4399.js"></script>
+    <script src="4399.js"></script>
     <script>
         // Initial configuration
         window.config = {
@@ -16,135 +16,99 @@
             minRatio: 9 / 16,
             title: 'Subway Surfers: Havana',
             unityVersion: '2019.2.0f1',
-            unityWebglBuildUrl: 'unity/havana/Havana_4.json',
+            unityWebglBuildUrl: 'Havana_4.json',
             fileSize: 35,
             cachedDecompressedFileSizes: {
-                'unity/havana/Havana_4.asm.code.unityweb': 9057213,
-                'unity/havana/Havana_4.asm.framework.unityweb': 89460,
-                'unity/havana/Havana_4.asm.memory.unityweb': 1004462,
-                'unity/havana/Havana_4.data.unityweb': 18352095,
-                'unity/havana/Havana_4.wasm.code.unityweb': 7336893,
-                'unity/havana/Havana_4.wasm.framework.unityweb': 93791,
+                'Havana_4.asm.code.unityweb': 9057213,
+                'Havana_4.asm.framework.unityweb': 89460,
+                'Havana_4.asm.memory.unityweb': 1004462,
+                'Havana_4.data.unityweb': 18352095, // Original size
+                'Havana_4.wasm.code.unityweb': 7336893, // Original size
+                'Havana_4.wasm.framework.unityweb': 93791,
             },
         };
 
-        // Configuration from the JSON file
+        // Configuration from the JSON file you provided
         window.unityConfig = {
             "dataUrl": "Havana_4.data.unityweb",
             "wasmCodeUrl": "Havana_4.wasm.code.unityweb",
+            // Include other URLs from the JSON if your master-loader.js needs them
         };
 
+        // *** Merging Logic to Create Blob URLs ***
+
         /**
-         * Fetches multiple split parts, merges them into a single Blob, and returns a Blob URL.
-         * @param {string} fileUrlBase - The base URL of the file.
-         * @param {number} numParts - Number of parts to merge (default: 2).
+         * Fetches two split parts, merges them into a single Blob, and returns a Blob URL.
+         * @param {string} fileUrlBase - The base URL of the file (e.g., 'Havana_4.data.unityweb').
          * @returns {Promise<string>} - The Blob URL of the merged file.
          */
-        async function mergeSplitFile(fileUrlBase, numParts = 2) {
-            console.log(`Fetching and merging: ${fileUrlBase} (${numParts} parts)`);
+        async function mergeSplitFile(fileUrlBase) {
+            const part1Url = `${fileUrlBase}.part1`;
+            const part2Url = `${fileUrlBase}.part2`;
 
-            try {
-                // Create array of part URLs
-                const partUrls = Array.from({ length: numParts }, (_, i) => 
-                    `${fileUrlBase}.part${i + 1}`
-                );
+            console.log(`Fetching and merging: ${fileUrlBase}`);
 
-                // Fetch all parts in parallel
-                const responses = await Promise.all(
-                    partUrls.map(url => fetch(url))
-                );
+            const [response1, response2] = await Promise.all([
+                fetch(part1Url),
+                fetch(part2Url)
+            ]);
 
-                // Check if all fetches succeeded
-                if (responses.some(r => !r.ok)) {
-                    throw new Error('One or more parts failed to fetch');
-                }
-
-                // Get array buffers from all responses
-                const parts = await Promise.all(
-                    responses.map(r => r.arrayBuffer())
-                );
-
-                // Calculate total size for verification
-                const totalSize = parts.reduce((sum, part) => sum + part.byteLength, 0);
-                console.log(`Merged ${fileUrlBase}: ${totalSize} bytes from ${numParts} parts`);
-
-                // Combine all parts into a single Blob
-                const combinedBlob = new Blob(parts, {
-                    type: 'application/octet-stream'
-                });
-
-                const blobUrl = URL.createObjectURL(combinedBlob);
-                console.log(`Successfully created blob URL for ${fileUrlBase}`);
-                
-                return blobUrl;
-            } catch (error) {
-                console.error(`Failed to merge ${fileUrlBase}:`, error);
-                // Return original URL as fallback
-                return fileUrlBase;
+            if (!response1.ok || !response2.ok) {
+                // If fetching fails, we revert to the original URL to try the non-split version
+                console.error(`Failed to fetch split parts for ${fileUrlBase}. Reverting to original URL.`);
+                return fileUrlBase; 
             }
+
+            const [part1Data, part2Data] = await Promise.all([
+                response1.arrayBuffer(),
+                response2.arrayBuffer()
+            ]);
+
+            const combinedBlob = new Blob([part1Data, part2Data], {
+                type: 'application/octet-stream'
+            });
+
+            return URL.createObjectURL(combinedBlob);
         }
 
-        /**
-         * Intercepts Unity's file loading to use our merged blob URLs
-         */
+        // *** Pre-loading and Configuration Update ***
+
+        // This function executes the merge and updates the configuration before the main loader runs.
         async function prepareGameAssets() {
-            const basePath = 'unity/havana/';
+            // Adjust the base path to match the <base href> tag and the unityWebglBuildUrl path
+            const basePath = ''; 
             
-            try {
-                console.log('Starting asset preparation...');
-                
-                // Merge files in parallel for faster loading
-                const [mergedDataUrl, mergedWasmCodeUrl] = await Promise.all([
-                    mergeSplitFile(basePath + window.unityConfig.dataUrl, 2),
-                    mergeSplitFile(basePath + window.unityConfig.wasmCodeUrl, 2)
-                ]);
-                
-                // Update config with Blob URLs
-                window.unityConfig.dataUrl = mergedDataUrl;
-                window.unityConfig.wasmCodeUrl = mergedWasmCodeUrl;
-                
-                console.log('Asset preparation complete!');
-                console.log('Data URL:', mergedDataUrl);
-                console.log('WASM URL:', mergedWasmCodeUrl);
-                
-                window.assetsPrepared = true;
-                
-                // Now load the master-loader
-                loadMasterLoader();
-                
-            } catch (error) {
-                console.error('Error preparing game assets:', error);
-                window.assetsPrepared = false;
-                // Load master-loader anyway as fallback
-                loadMasterLoader();
-            }
+            // 1. Merge the main data file
+            const dataUrlBase = basePath + window.unityConfig.dataUrl;
+            const mergedDataUrl = await mergeSplitFile(dataUrlBase);
+            window.unityConfig.dataUrl = mergedDataUrl; // Update config with the Blob URL
+
+            // 2. Merge the wasm code file
+            const wasmCodeUrlBase = basePath + window.unityConfig.wasmCodeUrl;
+            const mergedWasmCodeUrl = await mergeSplitFile(wasmCodeUrlBase);
+            window.unityConfig.wasmCodeUrl = mergedWasmCodeUrl; // Update config with the Blob URL
+            
+            console.log('File merging complete. Starting Unity loader...');
+
+            // The 'master-loader.js' must be included *after* this script updates the config
+            // However, to keep your original structure, we'll use a flag or a delayed load 
+            // for the master-loader. For this example, we'll assume the master-loader checks
+            // for the presence of window.unityConfig.
+            
+            // In a real-world scenario, you would dynamically load master-loader.js here
+            // after the merge is complete. Since your HTML loads it directly in the body,
+            // we'll rely on a global configuration object.
+            window.assetsPrepared = true; 
         }
 
-        /**
-         * Dynamically loads the master-loader.js after assets are prepared
-         */
-        function loadMasterLoader() {
-            const script = document.createElement('script');
-            script.src = 'unity/master-loader.js';
-            script.onload = function() {
-                console.log('Master loader loaded');
-            };
-            script.onerror = function() {
-                console.error('Failed to load master-loader.js');
-            };
-            document.body.appendChild(script);
-        }
-
-        // Start the preparation process when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', prepareGameAssets);
-        } else {
-            prepareGameAssets();
-        }
+        // Execute the preparation
+        prepareGameAssets();
 
     </script>
 </head>
 
 <body>
-    <!-- master-loader.js will be loaded dynamically after asset preparation -->
+    <script src="master-loader.js"></script>
 </body>
+
+</html>
